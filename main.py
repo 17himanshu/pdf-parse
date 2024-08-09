@@ -7,7 +7,7 @@ import pytesseract
 import json
 from flask import Flask, request, render_template, jsonify
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# pytesseract will use the system's Tesseract installation
 
 load_dotenv()
 
@@ -87,4 +87,4 @@ def index():
 
 if __name__ == '__main__':
     os.makedirs('uploads', exist_ok=True)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
