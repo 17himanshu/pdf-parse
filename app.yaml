@@ -1,0 +1,11 @@
+runtime: python311
+entrypoint: gunicorn -b :$PORT main:app
+
+env_variables:
+  GEMNAI_API_KEY: ""
+
+instance_class: F2
+
+handlers:
+- url: /.*
+  script: auto
