@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Information Extractor</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #uploadForm {
+            margin-bottom: 20px;
+        }
+        #result {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        #status {
+            font-weight: bold;
+        }
+        #output {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>Invoice Information Extractor</h1>
+    
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg">
+        <button type="submit">Extract Information</button>
+    </form>
+
+    <div id="result">
+        <p id="status"></p>
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#uploadForm').on('submit', function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                
+                $('#status').text('Uploading and processing...');
+                $('#output').text('');
+
+                $.ajax({
+                    url: '/',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        if (response.task_id) {
+                            pollResult(response.task_id);
+                        } else {
+                            $('#status').text('Completed!');
+                            $('#output').text(response.result);
+                        }
+                    },
+                    error: function() {
+                        $('#status').text('Error occurred during upload or processing.');
+                    }
+                });
+            });
+
+            function pollResult(taskId) {
+                $.get('/status/' + taskId, function(response) {
+                    if (response.status === 'completed') {
+                        $('#status').text('Completed!');
+                        $('#output').text(response.result);
+                    } else {
+                        $('#status').text('Still processing...');
+                        setTimeout(function() { pollResult(taskId); }, 2000);
+                    }
+                }).fail(function() {
+                    $('#status').text('Error occurred while checking status.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
